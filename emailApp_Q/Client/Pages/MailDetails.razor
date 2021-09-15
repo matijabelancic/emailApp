@@ -1,0 +1,27 @@
+﻿@using emailApp_Q.Client.Services;
+@using emailApp_Q.Shared;
+@inject IMailService _mailService;
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5" Color="Color.Tertiary">
+              Mail details for <strong>@mail.Reciver</strong>
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField Value="@mail.Sender" Label="From" ReadOnly="true" />
+        <MudTextField Value="@mail.CC" Label="CC" ReadOnly="true" />
+        <MudTextField Value="@mail.Importance.Name" Label="Importance" ReadOnly="true" />
+        <MudTextField Value="@mail.Subject" Label="Subject" ReadOnly="true" />
+        <MudTextField Value="@mail.Content" Label="Content" ReadOnly="true" Lines="7" />
+    </DialogContent>
+
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public Mail mail { get; set; } = new Mail();
+
+}

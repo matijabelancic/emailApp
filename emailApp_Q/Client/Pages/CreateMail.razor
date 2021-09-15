@@ -1,0 +1,116 @@
+﻿@page "/createMail"
+@using emailApp_Q.Client.Services;
+@using emailApp_Q.Shared;
+@inject IMailService _mailService;
+@inject IDialogService Dialog;
+@inject NavigationManager NavManager;
+
+<EditForm Model="_mail" OnValidSubmit="Create">
+    <DataAnnotationsValidator />
+    <MudGrid>
+        <MudItem xs="8" Class="mx-auto">
+            <MudCard>
+                <MudText Color="Color.Tertiary" Typo="Typo.h5" Class="pa-5">New Email  </MudText>
+                <MudDivider />
+                <MudCardContent>
+
+                    <MudTextField @bind-Value="_mail.Sender"
+                                  For="@(() => _mail.Sender)"
+                                  Immediate="true"
+                                  Label="From" Variant="Variant.Outlined" />
+
+
+                    <MudTextField @bind-Value="_mail.Reciver"
+                                  For="@(() => _mail.Reciver)"
+                                  Immediate="true"
+                                  Label="To" Variant="Variant.Outlined" />
+
+
+
+                    <MudTextField @bind-Value="_mail.CC" Label="CC" Variant="Variant.Outlined" For="@(() => _mail.CC)" Immediate="true" HelperText="Use a separator ; to define multiple addresses" />
+
+
+
+                    <MudTextField @bind-Value="_mail.Subject" Label="Subject" Variant="Variant.Outlined" For="@(() => _mail.Subject)"
+                                  Immediate="true" />
+
+
+
+                    <MudSelect @bind-Value="_mail.ImportanceId" Label="Importance" Strict="true" Variant="Variant.Outlined" Format="F2" For="@(() => _mail.ImportanceId)"
+                               Immediate="true">
+                        @foreach (var import in importances)
+                        {
+                            <MudSelectItem Value="@import.Id">@import.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+
+
+                    <MudTextField @bind-Value="_mail.Content" Label="Content" For="@(() => _mail.Content)"
+                                  Immediate="true" Lines="7" Variant="Variant.Outlined" />
+
+
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Class="ml-auto" Variant="Variant.Filled"
+                               EndIcon="@Icons.Material.Filled.Cancel"
+                               Color="Color.Error" OnClick="@ExecuteCancelDialog">Cancel</MudButton>
+                    <MudButton Variant="Variant.Filled" Class="ma-5"
+                               EndIcon="@Icons.Material.Filled.Send"
+                               Color="Color.Success" ButtonType="ButtonType.Submit">Send</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+    </MudGrid>
+
+</EditForm>
+
+
+
+@code {
+
+    [Inject]
+    public ISnackbar Snackbar { get; set; }
+
+    private string ccc { get; set; }
+    private bool Success { get; set; } = false;
+    private Mail _mail = new Mail();
+    private List<Importance> importances = new List<Importance>();
+    protected async override Task OnInitializedAsync()
+    {
+        importances = await _mailService.GetImportances();
+    }
+    private async Task Create()
+    {
+
+        await _mailService.CreateEmail(_mail);
+        Snackbar.Add("Email send.", Severity.Success);
+        NavManager.NavigateTo("/");
+    }
+
+
+    private async Task ExecuteCancelDialog()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", "Are you sure you want to cancel?");
+        parameters.Add("ButtonText", "Yes");
+        parameters.Add("Color", Color.Success);
+
+        var dialog = Dialog.Show<CancelDialog>("Confirm", parameters);
+
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            bool.TryParse(result.Data.ToString(), out bool shouldNavigate);
+            if (shouldNavigate)
+                NavManager.NavigateTo("/");
+
+
+        }
+    }
+
+
+
+
+
+}

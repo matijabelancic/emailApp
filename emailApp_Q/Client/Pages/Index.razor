@@ -1,0 +1,87 @@
+﻿@page "/"
+@using emailApp_Q.Client.Services;
+@using emailApp_Q.Shared;
+@using emailApp_Q.Shared.RequestFeatures;
+@inject IMailService _mailService;
+@using MudBlazor
+@inject IDialogService DialogService
+
+<MudLink Href="/createMail">
+    <MudFab Icon="@Icons.Material.Filled.MailOutline" Color="Color.Tertiary" Label=" New Email" />
+</MudLink>
+
+<MudTable Class="mt-10" ServerData="@(new Func<TableState, Task<TableData<Mail>>>(GetServerData))"
+          Hover="true" Breakpoint="Breakpoint.Sm" RightAlignSmall="true"
+          @ref="_table" RowsPerPage="4">
+    <ToolBarContent>
+        <MudText Color="Color.Tertiary" Typo="Typo.h5">History</MudText>
+        <MudToolBarSpacer />
+        <MudTextField OnDebounceIntervalElapsed="OnSearch" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+                      Class="mt-0" T="string" DebounceInterval="500"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>From</MudTh>
+        <MudTh>To</MudTh>
+        <MudTh>Subject</MudTh>
+        <MudTh>Importance</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="From">@context.Sender</MudTd>
+        <MudTd DataLabel="To">@context.Reciver</MudTd>
+        <MudTd DataLabel="Subject">@context.Subject</MudTd>
+        <MudTd DataLabel="Importance">@context.Importance.Name</MudTd>
+        <MudTd><MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Tertiary" OnClick="@(() => MailDetailPress(context.Id))">Mail Details</MudButton></MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="@_pageSizeOption" RowsPerPageString="Mails per page" />
+    </PagerContent>
+</MudTable>
+
+@if (ShowDetails)
+{
+
+
+}
+
+
+@code
+    {
+    private MudTable<Mail> _table;
+    private MailParameters _mailParameters = new MailParameters();
+    private readonly int[] _pageSizeOption = { 5, 10, 15 };
+    private Mail mail { get; set; } = new Mail();
+    private bool ShowDetails { get; set; }
+
+    private async Task<TableData<Mail>> GetServerData(TableState state)
+    {
+        _mailParameters.PageSize = state.PageSize;
+        _mailParameters.PageNumber = state.Page + 1;
+        var response = await _mailService.GetMails(_mailParameters);
+        return new TableData<Mail>
+        {
+            Items = response.Items,
+            TotalItems = response.MetaData.TotalCount
+        };
+    }
+
+    private void OnSearch(string searchTerm)
+    {
+        _mailParameters.SearchTerm = searchTerm;
+        _table.ReloadServerData();
+    }
+
+    private async void MailDetailPress(int mailId)
+    {
+        mail = await _mailService.GetById(mailId);
+        DialogOptions maxWidth = new DialogOptions() { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, Position = DialogPosition.Center };
+        var parameters = new DialogParameters { ["mail"] = mail };
+        var dialog = DialogService.Show<MailDetails>("MailDetails", parameters, maxWidth);
+        var result = await dialog.Result;
+    }
+
+}
+
+
+
