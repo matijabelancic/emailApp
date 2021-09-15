@@ -5,7 +5,7 @@ Simple EmailApp build in Blazor WebAssembly with ASP.NET Core Web API.
 
 **Database migration**
 
-For this project I was use MSSQL so to enable migrations you need to do this:
+For this project I use MSSQL so to enable migrations to database you need to do this:
 
 Open application with Visual Studio (2017 or 2019), and open the Package Manager Console window.
 To create a tables and transfer all the data from configuration files you need to apply:
