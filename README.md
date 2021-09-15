@@ -1,5 +1,5 @@
 # EmailApp
-Simble EmailApp build in Blazor WebAssembly with ASP.NET Core Web API.
+Simple EmailApp build in Blazor WebAssembly with ASP.NET Core Web API.
 
 ## How to run
 
